@@ -1,1 +1,1 @@
-# FlightViz is a flight history visulization tool
+== FlightViz is a flight history visualization tool == 
