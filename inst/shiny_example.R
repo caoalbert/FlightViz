@@ -8,14 +8,20 @@ create_globe(df2) %>%
 
 
 ui<- fluidPage(
-  selectInput("manufacture", "Manufacture", choices = levels(factor(df2$Manufacture))),
+  checkboxGroupInput("manufacturer", "Manufacturer", choices = levels(factor(df2$Manufacture)),
+                                                     selected = levels(factor(df2$Manufacture))),
+  sliderInput("year", "Year", value = c(min(df2$Year), max(df2$Year)),
+                              min = min(df2$Year),
+                              max = max(df2$Year)),
   globeOutput("globe")
 )
 
 
 server<- function(input, output){
   df<- reactive({
-    df2 %>% filter(Manufacture == input$manufacture)
+    df2 %>%
+      filter(Manufacturer %in% input$manufacturer,
+             Year %in% seq(input$year[1], input$year[2], 1))
   })
 
 
