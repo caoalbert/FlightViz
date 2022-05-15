@@ -1,8 +1,4 @@
-#' @import tidyverse
-#' @import globe4r
-#' @import shiny
-#' @import lubridate
-#' @import sf
+
 
 
 library(tidyverse)
@@ -11,6 +7,8 @@ library(sf)
 library(shiny)
 library(lubridate)
 library(ggiraph)
+library(readxl)
+data(airports)
 
 
 ui<- fluidPage(
@@ -28,32 +26,23 @@ ui<- fluidPage(
 
 server<- function(input, output){
 
-  df2<- reactive(input$flight_history, {
-    read_xlsx(input$flight_history$datapath,
-              col_names = c("Airport_id",
-                            "Name",
-                            "City",
-                            "Country",
-                            "IATA",
-                            "ICAO",
-                            "Lat",
-                            "Long",
-                            "Alt",
-                            "Timezone",
-                            "DST",
-                            "Tz database",
-                            "Type",
-                            "Source"))})
-
-
-
-
-
-  df<- reactive({
-    df2() %>%
+  df2<- reactive({
+    req(input$flight_history)
+    upload<- read_xlsx(input$flight_history$datapath)
+    df1 %>%
+      left_join(airports, by = c("Dep_Airport" = "IATA")) %>%
+      left_join(airports, by = c("Arvl_Airport" = "IATA"), suffix = c("_dep", "_arvl")) %>%
+      mutate(Date = as.Date(Date, "%m/%d/%Y")) %>%
+      mutate(Year = year(Date)) %>%
+      select(Lat_dep, Long_dep, Lat_arvl, Long_arvl, Alti, colnames(df1), Year) %>%
       dplyr::filter(Manufacturer %in% input$manufacturer,
-             Year %in% seq(input$year[1], input$year[2], 1))
+                    Year %in% seq(input$year[1], input$year[2], 1))
   })
+
+
+
+
+
 
 
   output$globe<- renderGlobe({
